@@ -1,8 +1,41 @@
-function [trialdata, savefile] = BoxLength(subjid, sessionno, numblocks, responseInterval, basePay)
+function [trialdata, savefile] = BoxLength(subjid, numblocks, responseInterval, basePay)
 
 % Code for the go-cued version was originally written by Rebecca Tortell
 % Modified in 2009 by Sharareh Noorbaloochi to the deadlined task
 % Modified in 2010 by Eliezer Kanal to work with MEG
+
+% Set filename
+fprintf( '\n The following information relating to subject %d currently exists: \n\n', subjid );
+
+d = dir('C:\Documents and Settings\eliezerk\Desktop\My Dropbox\MATLAB\BoxLength\data\');
+%d = dir( sprintf( '~/Documents/MATLAB/BoxLength/data/%d/', subjid ) );
+sessions = [];
+for n=1:length(d)
+    if ~isempty(regexp(d(n).name,sprintf('%d\\-\\d{1,2}.mat',subjid),'match'))
+        num = regexp(d(n).name,sprintf('%d\\-(\\d{1,2}).mat',subjid),'tokens');
+        sessions = [sessions str2double(cell2mat(num{1}))];
+    end
+end
+sessions = sort(sessions);
+
+if isempty( sessions )
+    fprintf( 1, 'New subject: no files related to subject %d in the directory. \n\n', subjid );
+else
+    fprintf('Found sessions: ');
+    disp(sessions);
+end
+
+continue_response = input( sprintf( 'Continue with session %d? Type ''y'' if yes, ''n'' if no.\n', max(sessions)+1 ), 's' );
+if strcmp( continue_response, 'y' ) ~= 1
+    return
+end
+
+% increment the filename number based on previous file names
+sessionno = 0;
+while sessionno < 1 || exist(strcat(filename, '.mat'),'file') || exist(strcat(filename, '_1.mat'),'file')
+    sessionno = sessionno + 1;
+    filename = sprintf ('%d_d', subjid, sessionno);
+end
 
 % variable declarations;
 numtrials  = 160;

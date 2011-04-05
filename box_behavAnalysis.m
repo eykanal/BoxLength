@@ -304,12 +304,12 @@ plot( cat.plot.i.easy.x.value, cat.plot.i.easy.y.value, '-r' );
 plot( cat.plot.n.hard.x.value, cat.plot.n.hard.y.value, '--g' );
 plot( cat.plot.n.easy.x.value, cat.plot.n.easy.y.value, '-g' );
 
-scatter( cat.plot.c.hard.x.value, cat.plot.c.hard.y.value, cat.plot.c.hard.count*2, 'ob', 'filled' );
-scatter( cat.plot.c.easy.x.value, cat.plot.c.easy.y.value, cat.plot.c.easy.count*2, '^b', 'filled' );
-scatter( cat.plot.i.hard.x.value, cat.plot.i.hard.y.value, cat.plot.i.hard.count*2, 'or', 'filled' );
-scatter( cat.plot.i.easy.x.value, cat.plot.i.easy.y.value, cat.plot.i.easy.count*2, '^r', 'filled' );
-scatter( cat.plot.n.hard.x.value, cat.plot.n.hard.y.value, cat.plot.n.hard.count*2, 'og', 'filled' );
-scatter( cat.plot.n.easy.x.value, cat.plot.n.easy.y.value, cat.plot.n.easy.count*2, '^g', 'filled' );
+scatter( cat.plot.c.hard.x.value, cat.plot.c.hard.y.value, cat.plot.c.hard.count*4, 'ob', 'filled' );
+scatter( cat.plot.c.easy.x.value, cat.plot.c.easy.y.value, cat.plot.c.easy.count*4, '^b', 'filled' );
+scatter( cat.plot.i.hard.x.value, cat.plot.i.hard.y.value, cat.plot.i.hard.count*4, 'or', 'filled' );
+scatter( cat.plot.i.easy.x.value, cat.plot.i.easy.y.value, cat.plot.i.easy.count*4, '^r', 'filled' );
+scatter( cat.plot.n.hard.x.value, cat.plot.n.hard.y.value, cat.plot.n.hard.count*4, 'og', 'filled' );
+scatter( cat.plot.n.easy.x.value, cat.plot.n.easy.y.value, cat.plot.n.easy.count*4, '^g', 'filled' );
 
 % plot extra lines to show quantile demarcations
 quant_marker(5) = trialdata.responseInterval;  % add marker for deadline
@@ -318,7 +318,7 @@ fig = gca;
 set(fig, 'xtick', round(quant_marker*1000)/1000 );      % custom x labels
 set(fig, 'ytick', 0:0.2:1);  % custom y labels
 grid on;
-axis([ 0.2 0.55 0 1 ]);
+axis([ 0.15 trialdata.responseInterval+0.05 0 1 ]);
 
 % legends and labels and stuff
 title( sprintf( '%i-%i', subject, session) );
