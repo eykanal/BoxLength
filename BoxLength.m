@@ -1,4 +1,3 @@
-
 function [trialdata, savefile] = BoxLength(subjid, sessionno, numblocks, responseInterval, basePay)
 
 % Code for the go-cued version was originally written by Rebecca Tortell
@@ -66,6 +65,7 @@ if strfind(cell2mat(devices.ObjectConstructorName(3)), 'digitalio')
     
     hwlines = addline(daq, 0:7, 0, 'out');
     hwlines = addline(daq, 0:4, 1, 'in');
+    putvalue(daq.Line(1:8), 0);
 else
     TriggerFlag = 0;
     daq = -1;
@@ -98,9 +98,9 @@ for q = 1:numblocks
         st{5} = '    (2) Prepare the higher reward side.';
         st{6} = '    (3) Guessing is better than not responding at all.';
         st{7} = '';
-        st{8} = 'Press space to continue.';
+        st{8} = 'Press the right key to continue.';
 
-        DisplayText( st, spkey );
+        DisplayText( st, rkey );
         
     % Pause between blocks
     else
@@ -113,9 +113,9 @@ for q = 1:numblocks
         st{5} = '    (3) Guessing is better than not responding at all.';
         st{6} = ['block score: ' num2str(sum(trialdata.points(q-1,:)),'%10.1f'), ', Total score: ' num2str(sum(sum(trialdata.points)), '%10.1f') ', completed blocks: ' num2str(q-1) '.'];
         st{7} = '';
-        st{8} = 'Press space to continue.';
+        st{8} = 'Press the right key to continue.';
 
-        DisplayText( st, spkey );
+        DisplayText( st, rkey );
         
         WaitSecs(1);
     end
@@ -334,7 +334,7 @@ donestring{1} = 'You have reached the end of the session.';
 donestring{2} = ['Your score for this session: ' num2str(score) ' points.'];
 donestring{3} = ['Total Earning for this session: $' num2str(basePay+score/100, '%10.2f')];
 
-DisplayText( donestring, spkey );
+DisplayText( donestring, rkey );
 
 Screen('CloseAll');
 
@@ -606,7 +606,7 @@ Screen('CloseAll');
 
 
     % Display text on the screen, 
-    function DisplayText( text, continueKey, dispTime )
+    function DisplayText( text, continueKey )
         
         % if continueKey is not in the keys array, throw an error
         if ~isempty( continueKey ) && isempty( keys( continueKey == keys ) )
@@ -630,7 +630,7 @@ Screen('CloseAll');
         
         % If daq...
         if isa( daq, 'digitalio' )
-            WaitForResponse( daq, dispTime, continueKey );
+            WaitForResponse( daq, GetSecs, continueKey );
             
         % If keyboard...
         else
