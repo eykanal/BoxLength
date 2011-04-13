@@ -1,4 +1,4 @@
-function cat = box_behavAnalysis2( subject, session )
+function cat = box_behavAnalysis( subject, session )
 %
 % Usage: [out] = behavAnalysis2( data )
 % 
@@ -10,6 +10,8 @@ function cat = box_behavAnalysis2( subject, session )
 % - response time
 % - number of early & late responses
 % Only correct responses are analyzed.
+
+dbstop if error
 
 data = ['~/Documents/MATLAB/BoxLength/data/' num2str(subject) '/' num2str(subject) '-' num2str(session)];
 load( data, 'trialdata' );
@@ -59,19 +61,6 @@ num_late_hard_nobias  = sum( trialdata.late( trialdata.offs == hard & trialdata.
 num_late_hard_left    = sum( trialdata.late( trialdata.offs == hard & trialdata.leftreward == 4 ) );
 num_late_hard_right   = sum( trialdata.late( trialdata.offs == hard & trialdata.leftreward == 2 ) );
 
-% print it all out
-% fprintf( '\nDiff\tNobias\tLeft\tRight\n' );
-% fprintf( 'Easy\t%i\t%i\t%i\n', count_easy_nobias, count_easy_left, count_easy_right );
-% fprintf( 'Hard\t%i\t%i\t%i\n', count_hard_nobias, count_hard_left, count_hard_right );
-% fprintf( 'Easy\tearly/late\t%i/%i\t%i/%i\t%i/%i\n', num_early_easy_nobias, num_late_easy_nobias, num_early_easy_left, num_late_easy_left, num_early_easy_right, num_late_easy_right );
-% fprintf( 'Hard\tearly/late\t%i/%i\t%i/%i\t%i/%i\n\n', num_early_hard_nobias, num_late_hard_nobias, num_early_hard_left, num_late_hard_left, num_early_hard_right, num_late_hard_right );
-% 
-% fprintf( 'Diff\tMeasure\t\tavg (sd), x\t\tavg (sd), <|\t\tavg (sd), |>\t\n' );
-% fprintf( 'Easy\tcorrect\t\t%01.4f (%01.4f)\t\t%01.4f (%01.4f)\t\t%01.4f (%01.4f)\n', mean(correct_easy_nobias), var(correct_easy_nobias), mean(correct_easy_left), var(correct_easy_left), mean(correct_easy_right), var(correct_easy_right) );
-% fprintf( 'Hard\tcorrect\t\t%01.4f (%01.4f)\t\t%01.4f (%01.4f)\t\t%01.4f (%01.4f)\n', mean(correct_hard_nobias), var(correct_hard_nobias), mean(correct_hard_left), var(correct_hard_left), mean(correct_hard_right), var(correct_hard_right) );
-% fprintf( 'Easy\tRT\t\t%01.4f (%01.4f)\t\t%01.4f (%01.4f)\t\t%01.4f (%01.4f)\n',      mean(rt_easy_nobias),    mean(rt_easy_nobias),   mean(rt_easy_left),    mean(rt_easy_left),   mean(rt_easy_right),    mean(rt_easy_right) );
-% fprintf( 'Hard\tRT\t\t%01.4f (%01.4f)\t\t%01.4f (%01.4f)\t\t%01.4f (%01.4f)\n\n',    mean(rt_hard_nobias),    mean(rt_hard_nobias),   mean(rt_hard_left),    mean(rt_hard_left),   mean(rt_hard_right),    mean(rt_hard_right) );
-
 output1 = {'Diff', 'No Bias', 'Left', 'Right';
             'Easy', count_easy_nobias, count_easy_left, count_easy_right;
             'Hard', count_hard_nobias, count_hard_left, count_hard_right; };
@@ -105,211 +94,111 @@ raw_q3 = raw_sorted( 3*floor( raw_size / 5 ) );
 raw_q4 = raw_sorted( 4*floor( raw_size / 5 ) );
 quant_marker = [raw_q1 raw_q2 raw_q3 raw_q4];
 
-q1 = find( raw > 0      & raw <= raw_q1 );
-q2 = find( raw > raw_q1 & raw <= raw_q2 );
-q3 = find( raw > raw_q2 & raw <= raw_q3 );
-q4 = find( raw > raw_q3 & raw <= raw_q4 );
-q5 = find( raw > raw_q4 );
+q1 = find( raw > 0      & raw <= raw_q1 );  %#ok
+q2 = find( raw > raw_q1 & raw <= raw_q2 );  %#ok
+q3 = find( raw > raw_q2 & raw <= raw_q3 );  %#ok
+q4 = find( raw > raw_q3 & raw <= raw_q4 );  %#ok
+q5 = find( raw > raw_q4 );                  %#ok
 
 % Now categorize the data as congruent (c), incongruent (i), and neutral (n)
 % trials. Note that in trialdata.dir, 10 = right, -10 = left.
 cat = struct;
 
-temp_rt = trialdata.respTime(q1);
-temp_co = trialdata.correct(q1);
+for n = 1:5;
+    q = eval(['q' num2str(n)]);
+    
+    temp_rt = trialdata.respTime(q);
+    temp_co = trialdata.correct(q);
 
-cat.c.hard.rt.q1 = temp_rt( ( ( trialdata.dir(q1) == 10 & trialdata.leftreward(q1) == 2 ) | ( trialdata.dir(q1) == -10 & trialdata.leftreward(q1) == 4 ) ) & trialdata.offs(q1) == hard );
-cat.c.easy.rt.q1 = temp_rt( ( ( trialdata.dir(q1) == 10 & trialdata.leftreward(q1) == 2 ) | ( trialdata.dir(q1) == -10 & trialdata.leftreward(q1) == 4 ) ) & trialdata.offs(q1) == easy );
-cat.i.hard.rt.q1 = temp_rt( ( ( trialdata.dir(q1) == 10 & trialdata.leftreward(q1) == 4 ) | ( trialdata.dir(q1) == -10 & trialdata.leftreward(q1) == 2 ) ) & trialdata.offs(q1) == hard );
-cat.i.easy.rt.q1 = temp_rt( ( ( trialdata.dir(q1) == 10 & trialdata.leftreward(q1) == 4 ) | ( trialdata.dir(q1) == -10 & trialdata.leftreward(q1) == 2 ) ) & trialdata.offs(q1) == easy );
-cat.n.hard.rt.q1 = temp_rt( trialdata.leftreward(q1) == 3 & trialdata.offs(q1) == hard );
-cat.n.easy.rt.q1 = temp_rt( trialdata.leftreward(q1) == 3 & trialdata.offs(q1) == easy );
+    cat.c.hard.rt.(['q' num2str(n)]) = temp_rt( ( ( trialdata.dir(q) == 10 & trialdata.leftreward(q) == 2 ) | ( trialdata.dir(q) == -10 & trialdata.leftreward(q) == 4 ) ) & trialdata.offs(q) == hard );
+    cat.c.easy.rt.(['q' num2str(n)]) = temp_rt( ( ( trialdata.dir(q) == 10 & trialdata.leftreward(q) == 2 ) | ( trialdata.dir(q) == -10 & trialdata.leftreward(q) == 4 ) ) & trialdata.offs(q) == easy );
+    cat.i.hard.rt.(['q' num2str(n)]) = temp_rt( ( ( trialdata.dir(q) == 10 & trialdata.leftreward(q) == 4 ) | ( trialdata.dir(q) == -10 & trialdata.leftreward(q) == 2 ) ) & trialdata.offs(q) == hard );
+    cat.i.easy.rt.(['q' num2str(n)]) = temp_rt( ( ( trialdata.dir(q) == 10 & trialdata.leftreward(q) == 4 ) | ( trialdata.dir(q) == -10 & trialdata.leftreward(q) == 2 ) ) & trialdata.offs(q) == easy );
+    cat.n.hard.rt.(['q' num2str(n)]) = temp_rt( trialdata.leftreward(q) == 3 & trialdata.offs(q) == hard );
+    cat.n.easy.rt.(['q' num2str(n)]) = temp_rt( trialdata.leftreward(q) == 3 & trialdata.offs(q) == easy );
 
-cat.c.hard.co.q1 = temp_co( ( ( trialdata.dir(q1) == 10 & trialdata.leftreward(q1) == 2 ) | ( trialdata.dir(q1) == -10 & trialdata.leftreward(q1) == 4 ) ) & trialdata.offs(q1) == hard );
-cat.c.easy.co.q1 = temp_co( ( ( trialdata.dir(q1) == 10 & trialdata.leftreward(q1) == 2 ) | ( trialdata.dir(q1) == -10 & trialdata.leftreward(q1) == 4 ) ) & trialdata.offs(q1) == easy );
-cat.i.hard.co.q1 = temp_co( ( ( trialdata.dir(q1) == 10 & trialdata.leftreward(q1) == 4 ) | ( trialdata.dir(q1) == -10 & trialdata.leftreward(q1) == 2 ) ) & trialdata.offs(q1) == hard );
-cat.i.easy.co.q1 = temp_co( ( ( trialdata.dir(q1) == 10 & trialdata.leftreward(q1) == 4 ) | ( trialdata.dir(q1) == -10 & trialdata.leftreward(q1) == 2 ) ) & trialdata.offs(q1) == easy );
-cat.n.hard.co.q1 = temp_co( trialdata.leftreward(q1) == 3 & trialdata.offs(q1) == hard );
-cat.n.easy.co.q1 = temp_co( trialdata.leftreward(q1) == 3 & trialdata.offs(q1) == easy );
-
-temp_rt = trialdata.respTime(q2);
-temp_co = trialdata.correct(q2);
-
-cat.c.hard.rt.q2 = temp_rt( ( ( trialdata.dir(q2) == 10 & trialdata.leftreward(q2) == 2 ) | ( trialdata.dir(q2) == -10 & trialdata.leftreward(q2) == 4 ) ) & trialdata.offs(q2) == hard );
-cat.c.easy.rt.q2 = temp_rt( ( ( trialdata.dir(q2) == 10 & trialdata.leftreward(q2) == 2 ) | ( trialdata.dir(q2) == -10 & trialdata.leftreward(q2) == 4 ) ) & trialdata.offs(q2) == easy );
-cat.i.hard.rt.q2 = temp_rt( ( ( trialdata.dir(q2) == 10 & trialdata.leftreward(q2) == 4 ) | ( trialdata.dir(q2) == -10 & trialdata.leftreward(q2) == 2 ) ) & trialdata.offs(q2) == hard );
-cat.i.easy.rt.q2 = temp_rt( ( ( trialdata.dir(q2) == 10 & trialdata.leftreward(q2) == 4 ) | ( trialdata.dir(q2) == -10 & trialdata.leftreward(q2) == 2 ) ) & trialdata.offs(q2) == easy );
-cat.n.hard.rt.q2 = temp_rt( trialdata.leftreward(q2) == 3 & trialdata.offs(q2) == hard );
-cat.n.easy.rt.q2 = temp_rt( trialdata.leftreward(q2) == 3 & trialdata.offs(q2) == easy );
-
-cat.c.hard.co.q2 = temp_co( ( ( trialdata.dir(q2) == 10 & trialdata.leftreward(q2) == 2 ) | ( trialdata.dir(q2) == -10 & trialdata.leftreward(q2) == 4 ) ) & trialdata.offs(q2) == hard );
-cat.c.easy.co.q2 = temp_co( ( ( trialdata.dir(q2) == 10 & trialdata.leftreward(q2) == 2 ) | ( trialdata.dir(q2) == -10 & trialdata.leftreward(q2) == 4 ) ) & trialdata.offs(q2) == easy );
-cat.i.hard.co.q2 = temp_co( ( ( trialdata.dir(q2) == 10 & trialdata.leftreward(q2) == 4 ) | ( trialdata.dir(q2) == -10 & trialdata.leftreward(q2) == 2 ) ) & trialdata.offs(q2) == hard );
-cat.i.easy.co.q2 = temp_co( ( ( trialdata.dir(q2) == 10 & trialdata.leftreward(q2) == 4 ) | ( trialdata.dir(q2) == -10 & trialdata.leftreward(q2) == 2 ) ) & trialdata.offs(q2) == easy );
-cat.n.hard.co.q2 = temp_co( trialdata.leftreward(q2) == 3 & trialdata.offs(q2) == hard );
-cat.n.easy.co.q2 = temp_co( trialdata.leftreward(q2) == 3 & trialdata.offs(q2) == easy );
-
-temp_rt = trialdata.respTime(q3);
-temp_co = trialdata.correct(q3);
-
-cat.c.hard.rt.q3 = temp_rt( ( ( trialdata.dir(q3) == 10 & trialdata.leftreward(q3) == 2 ) | ( trialdata.dir(q3) == -10 & trialdata.leftreward(q3) == 4 ) ) & trialdata.offs(q3) == hard );
-cat.c.easy.rt.q3 = temp_rt( ( ( trialdata.dir(q3) == 10 & trialdata.leftreward(q3) == 2 ) | ( trialdata.dir(q3) == -10 & trialdata.leftreward(q3) == 4 ) ) & trialdata.offs(q3) == easy );
-cat.i.hard.rt.q3 = temp_rt( ( ( trialdata.dir(q3) == 10 & trialdata.leftreward(q3) == 4 ) | ( trialdata.dir(q3) == -10 & trialdata.leftreward(q3) == 2 ) ) & trialdata.offs(q3) == hard );
-cat.i.easy.rt.q3 = temp_rt( ( ( trialdata.dir(q3) == 10 & trialdata.leftreward(q3) == 4 ) | ( trialdata.dir(q3) == -10 & trialdata.leftreward(q3) == 2 ) ) & trialdata.offs(q3) == easy );
-cat.n.hard.rt.q3 = temp_rt( trialdata.leftreward(q3) == 3 & trialdata.offs(q3) == hard );
-cat.n.easy.rt.q3 = temp_rt( trialdata.leftreward(q3) == 3 & trialdata.offs(q3) == easy );
-
-cat.c.hard.co.q3 = temp_co( ( ( trialdata.dir(q3) == 10 & trialdata.leftreward(q3) == 2 ) | ( trialdata.dir(q3) == -10 & trialdata.leftreward(q3) == 4 ) ) & trialdata.offs(q3) == hard );
-cat.c.easy.co.q3 = temp_co( ( ( trialdata.dir(q3) == 10 & trialdata.leftreward(q3) == 2 ) | ( trialdata.dir(q3) == -10 & trialdata.leftreward(q3) == 4 ) ) & trialdata.offs(q3) == easy );
-cat.i.hard.co.q3 = temp_co( ( ( trialdata.dir(q3) == 10 & trialdata.leftreward(q3) == 4 ) | ( trialdata.dir(q3) == -10 & trialdata.leftreward(q3) == 2 ) ) & trialdata.offs(q3) == hard );
-cat.i.easy.co.q3 = temp_co( ( ( trialdata.dir(q3) == 10 & trialdata.leftreward(q3) == 4 ) | ( trialdata.dir(q3) == -10 & trialdata.leftreward(q3) == 2 ) ) & trialdata.offs(q3) == easy );
-cat.n.hard.co.q3 = temp_co( trialdata.leftreward(q3) == 3 & trialdata.offs(q3) == hard );
-cat.n.easy.co.q3 = temp_co( trialdata.leftreward(q3) == 3 & trialdata.offs(q3) == easy );
-
-temp_rt = trialdata.respTime(q4);
-temp_co = trialdata.correct(q4);
-
-cat.c.hard.rt.q4 = temp_rt( ( ( trialdata.dir(q4) == 10 & trialdata.leftreward(q4) == 2 ) | ( trialdata.dir(q4) == -10 & trialdata.leftreward(q4) == 4 ) ) & trialdata.offs(q4) == hard );
-cat.c.easy.rt.q4 = temp_rt( ( ( trialdata.dir(q4) == 10 & trialdata.leftreward(q4) == 2 ) | ( trialdata.dir(q4) == -10 & trialdata.leftreward(q4) == 4 ) ) & trialdata.offs(q4) == easy );
-cat.i.hard.rt.q4 = temp_rt( ( ( trialdata.dir(q4) == 10 & trialdata.leftreward(q4) == 4 ) | ( trialdata.dir(q4) == -10 & trialdata.leftreward(q4) == 2 ) ) & trialdata.offs(q4) == hard );
-cat.i.easy.rt.q4 = temp_rt( ( ( trialdata.dir(q4) == 10 & trialdata.leftreward(q4) == 4 ) | ( trialdata.dir(q4) == -10 & trialdata.leftreward(q4) == 2 ) ) & trialdata.offs(q4) == easy );
-cat.n.hard.rt.q4 = temp_rt( trialdata.leftreward(q4) == 3 & trialdata.offs(q4) == hard );
-cat.n.easy.rt.q4 = temp_rt( trialdata.leftreward(q4) == 3 & trialdata.offs(q4) == easy );
-
-cat.c.hard.co.q4 = temp_co( ( ( trialdata.dir(q4) == 10 & trialdata.leftreward(q4) == 2 ) | ( trialdata.dir(q4) == -10 & trialdata.leftreward(q4) == 4 ) ) & trialdata.offs(q4) == hard );
-cat.c.easy.co.q4 = temp_co( ( ( trialdata.dir(q4) == 10 & trialdata.leftreward(q4) == 2 ) | ( trialdata.dir(q4) == -10 & trialdata.leftreward(q4) == 4 ) ) & trialdata.offs(q4) == easy );
-cat.i.hard.co.q4 = temp_co( ( ( trialdata.dir(q4) == 10 & trialdata.leftreward(q4) == 4 ) | ( trialdata.dir(q4) == -10 & trialdata.leftreward(q4) == 2 ) ) & trialdata.offs(q4) == hard );
-cat.i.easy.co.q4 = temp_co( ( ( trialdata.dir(q4) == 10 & trialdata.leftreward(q4) == 4 ) | ( trialdata.dir(q4) == -10 & trialdata.leftreward(q4) == 2 ) ) & trialdata.offs(q4) == easy );
-cat.n.hard.co.q4 = temp_co( trialdata.leftreward(q4) == 3 & trialdata.offs(q4) == hard );
-cat.n.easy.co.q4 = temp_co( trialdata.leftreward(q4) == 3 & trialdata.offs(q4) == easy );
-
-temp_rt = trialdata.respTime(q5);
-temp_co = trialdata.correct(q5);
-
-cat.c.hard.rt.q5 = temp_rt( ( ( trialdata.dir(q5) == 10 & trialdata.leftreward(q5) == 2 ) | ( trialdata.dir(q5) == -10 & trialdata.leftreward(q5) == 4 ) ) & trialdata.offs(q5) == hard );
-cat.c.easy.rt.q5 = temp_rt( ( ( trialdata.dir(q5) == 10 & trialdata.leftreward(q5) == 2 ) | ( trialdata.dir(q5) == -10 & trialdata.leftreward(q5) == 4 ) ) & trialdata.offs(q5) == easy );
-cat.i.hard.rt.q5 = temp_rt( ( ( trialdata.dir(q5) == 10 & trialdata.leftreward(q5) == 4 ) | ( trialdata.dir(q5) == -10 & trialdata.leftreward(q5) == 2 ) ) & trialdata.offs(q5) == hard );
-cat.i.easy.rt.q5 = temp_rt( ( ( trialdata.dir(q5) == 10 & trialdata.leftreward(q5) == 4 ) | ( trialdata.dir(q5) == -10 & trialdata.leftreward(q5) == 2 ) ) & trialdata.offs(q5) == easy );
-cat.n.hard.rt.q5 = temp_rt( trialdata.leftreward(q5) == 3 & trialdata.offs(q5) == hard );
-cat.n.easy.rt.q5 = temp_rt( trialdata.leftreward(q5) == 3 & trialdata.offs(q5) == easy );
-
-cat.c.hard.co.q5 = temp_co( ( ( trialdata.dir(q5) == 10 & trialdata.leftreward(q5) == 2 ) | ( trialdata.dir(q5) == -10 & trialdata.leftreward(q5) == 4 ) ) & trialdata.offs(q5) == hard );
-cat.c.easy.co.q5 = temp_co( ( ( trialdata.dir(q5) == 10 & trialdata.leftreward(q5) == 2 ) | ( trialdata.dir(q5) == -10 & trialdata.leftreward(q5) == 4 ) ) & trialdata.offs(q5) == easy );
-cat.i.hard.co.q5 = temp_co( ( ( trialdata.dir(q5) == 10 & trialdata.leftreward(q5) == 4 ) | ( trialdata.dir(q5) == -10 & trialdata.leftreward(q5) == 2 ) ) & trialdata.offs(q5) == hard );
-cat.i.easy.co.q5 = temp_co( ( ( trialdata.dir(q5) == 10 & trialdata.leftreward(q5) == 4 ) | ( trialdata.dir(q5) == -10 & trialdata.leftreward(q5) == 2 ) ) & trialdata.offs(q5) == easy );
-cat.n.hard.co.q5 = temp_co( trialdata.leftreward(q5) == 3 & trialdata.offs(q5) == hard );
-cat.n.easy.co.q5 = temp_co( trialdata.leftreward(q5) == 3 & trialdata.offs(q5) == easy );
+    cat.c.hard.co.(['q' num2str(n)]) = temp_co( ( ( trialdata.dir(q) == 10 & trialdata.leftreward(q) == 2 ) | ( trialdata.dir(q) == -10 & trialdata.leftreward(q) == 4 ) ) & trialdata.offs(q) == hard );
+    cat.c.easy.co.(['q' num2str(n)]) = temp_co( ( ( trialdata.dir(q) == 10 & trialdata.leftreward(q) == 2 ) | ( trialdata.dir(q) == -10 & trialdata.leftreward(q) == 4 ) ) & trialdata.offs(q) == easy );
+    cat.i.hard.co.(['q' num2str(n)]) = temp_co( ( ( trialdata.dir(q) == 10 & trialdata.leftreward(q) == 4 ) | ( trialdata.dir(q) == -10 & trialdata.leftreward(q) == 2 ) ) & trialdata.offs(q) == hard );
+    cat.i.easy.co.(['q' num2str(n)]) = temp_co( ( ( trialdata.dir(q) == 10 & trialdata.leftreward(q) == 4 ) | ( trialdata.dir(q) == -10 & trialdata.leftreward(q) == 2 ) ) & trialdata.offs(q) == easy );
+    cat.n.hard.co.(['q' num2str(n)]) = temp_co( trialdata.leftreward(q) == 3 & trialdata.offs(q) == hard );
+    cat.n.easy.co.(['q' num2str(n)]) = temp_co( trialdata.leftreward(q) == 3 & trialdata.offs(q) == easy );
+end
 
 % create plot data
-cat.plot.c.hard.x.value = [ mean( cat.c.hard.rt.q1 ) ...
-                          mean( cat.c.hard.rt.q2 ) ...
-                          mean( cat.c.hard.rt.q3 ) ...
-                          mean( cat.c.hard.rt.q4 ) ...
-                          mean( cat.c.hard.rt.q5 ) ];
-cat.plot.c.hard.y.value = [ mean( cat.c.hard.co.q1 ) ...
-                          mean( cat.c.hard.co.q2 ) ...
-                          mean( cat.c.hard.co.q3 ) ...
-                          mean( cat.c.hard.co.q4 ) ...
-                          mean( cat.c.hard.co.q5 ) ];
-cat.plot.c.easy.x.value = [ mean( cat.c.easy.rt.q1 ) ...
-                          mean( cat.c.easy.rt.q2 ) ...
-                          mean( cat.c.easy.rt.q3 ) ...
-                          mean( cat.c.easy.rt.q4 ) ...
-                          mean( cat.c.easy.rt.q5 ) ];
-cat.plot.c.easy.y.value = [ mean( cat.c.easy.co.q1 ) ...
-                          mean( cat.c.easy.co.q2 ) ...
-                          mean( cat.c.easy.co.q3 ) ...
-                          mean( cat.c.easy.co.q4 ) ...
-                          mean( cat.c.easy.co.q5 ) ];
-cat.plot.i.hard.x.value = [ mean( cat.i.hard.rt.q1 ) ...
-                          mean( cat.i.hard.rt.q2 ) ...
-                          mean( cat.i.hard.rt.q3 ) ...
-                          mean( cat.i.hard.rt.q4 ) ...
-                          mean( cat.i.hard.rt.q5 ) ];
-cat.plot.i.hard.y.value = [ 1-mean( cat.i.hard.co.q1 ) ...
-                          1-mean( cat.i.hard.co.q2 ) ...
-                          1-mean( cat.i.hard.co.q3 ) ...
-                          1-mean( cat.i.hard.co.q4 ) ...
-                          1-mean( cat.i.hard.co.q5 ) ];
-cat.plot.i.easy.x.value = [ mean( cat.i.easy.rt.q1 ) ...
-                          mean( cat.i.easy.rt.q2 ) ...
-                          mean( cat.i.easy.rt.q3 ) ...
-                          mean( cat.i.easy.rt.q4 ) ...
-                          mean( cat.i.easy.rt.q5 ) ];
-cat.plot.i.easy.y.value = [ 1-mean( cat.i.easy.co.q1 ) ...
-                          1-mean( cat.i.easy.co.q2 ) ...
-                          1-mean( cat.i.easy.co.q3 ) ...
-                          1-mean( cat.i.easy.co.q4 ) ...
-                          1-mean( cat.i.easy.co.q5 ) ];
-cat.plot.n.hard.x.value = [ mean( cat.n.hard.rt.q1 ) ...
-                          mean( cat.n.hard.rt.q2 ) ...
-                          mean( cat.n.hard.rt.q3 ) ...
-                          mean( cat.n.hard.rt.q4 ) ...
-                          mean( cat.n.hard.rt.q5 ) ];
-cat.plot.n.hard.y.value = [ mean( cat.n.hard.co.q1 ) ...
-                          mean( cat.n.hard.co.q2 ) ...
-                          mean( cat.n.hard.co.q3 ) ...
-                          mean( cat.n.hard.co.q4 ) ...
-                          mean( cat.n.hard.co.q5 ) ];
-cat.plot.n.easy.x.value = [ mean( cat.n.easy.rt.q1 ) ...
-                          mean( cat.n.easy.rt.q2 ) ...
-                          mean( cat.n.easy.rt.q3 ) ...
-                          mean( cat.n.easy.rt.q4 ) ...
-                          mean( cat.n.easy.rt.q5 ) ];
-cat.plot.n.easy.y.value = [ mean( cat.n.easy.co.q1 ) ...
-                          mean( cat.n.easy.co.q2 ) ...
-                          mean( cat.n.easy.co.q3 ) ...
-                          mean( cat.n.easy.co.q4 ) ...
-                          mean( cat.n.easy.co.q5 ) ];
-% determine how many trials of each type, so as to vary dot size
-cat.plot.c.hard.count = [ length( cat.c.hard.co.q1 ) ...
-                          length( cat.c.hard.co.q2 ) ...
-                          length( cat.c.hard.co.q3 ) ...
-                          length( cat.c.hard.co.q4 ) ...
-                          length( cat.c.hard.co.q5 ) ];
-cat.plot.c.easy.count = [ length( cat.c.easy.co.q1 ) ...
-                          length( cat.c.easy.co.q2 ) ...
-                          length( cat.c.easy.co.q3 ) ...
-                          length( cat.c.easy.co.q4 ) ...
-                          length( cat.c.easy.co.q5 ) ];
-cat.plot.i.hard.count = [ length( cat.i.hard.co.q1 ) ...
-                          length( cat.i.hard.co.q2 ) ...
-                          length( cat.i.hard.co.q3 ) ...
-                          length( cat.i.hard.co.q4 ) ...
-                          length( cat.i.hard.co.q5 ) ];
-cat.plot.i.easy.count = [ length( cat.i.easy.co.q1 ) ...
-                          length( cat.i.easy.co.q2 ) ...
-                          length( cat.i.easy.co.q3 ) ...
-                          length( cat.i.easy.co.q4 ) ...
-                          length( cat.i.easy.co.q5 ) ];
-cat.plot.n.hard.count = [ length( cat.n.hard.co.q1 ) ...
-                          length( cat.n.hard.co.q2 ) ...
-                          length( cat.n.hard.co.q3 ) ...
-                          length( cat.n.hard.co.q4 ) ...
-                          length( cat.n.hard.co.q5 ) ];
-cat.plot.n.easy.count = [ length( cat.n.easy.co.q1 ) ...
-                          length( cat.n.easy.co.q2 ) ...
-                          length( cat.n.easy.co.q3 ) ...
-                          length( cat.n.easy.co.q4 ) ...
-                          length( cat.n.easy.co.q5 ) ];
+cond = {'c','i','n'};
+diff = {'easy','hard'};
+vars = {'rt','co','count'};
+meas = {'mean','std'};
 
-                      
+cat.plot = [];
+
+% make the plot data
+for i=1:length(cond)
+    s_cond = cell2mat(cond(i));
+    cat.plot.(s_cond) = [];
+    for j=1:length(diff)
+        s_diff = cell2mat(diff(j));
+        cat.plot.(s_cond).(s_diff) = [];
+        for k=1:length(vars)
+            s_vars = cell2mat(vars(k));
+            cat.plot.(s_cond).(s_diff).(s_vars) = [];
+            
+            % only make mean & var for rt & co
+            if ~strcmp(s_vars, 'count')
+                for l=1:length(meas)
+                    s_meas = meas{l};
+                    func = str2func(meas{l});
+                    
+                    cat.plot.(s_cond).(s_diff).(s_vars).(s_meas) = ...
+                        [ feval(func, cat.(s_cond).(s_diff).(s_vars).q1 ) ...
+                          feval(func, cat.(s_cond).(s_diff).(s_vars).q2 ) ...
+                          feval(func, cat.(s_cond).(s_diff).(s_vars).q3 ) ...
+                          feval(func, cat.(s_cond).(s_diff).(s_vars).q4 ) ...
+                          feval(func, cat.(s_cond).(s_diff).(s_vars).q5 ) ];
+
+                      % invert if necessary
+                      if strcmp(s_cond,'i') && strcmp(s_vars, 'co') && strcmp(s_meas, 'mean')
+                          cat.plot.(s_cond).(s_diff).(s_vars).(s_meas) = ...
+                              1 - cat.plot.(s_cond).(s_diff).(s_vars).(s_meas);
+                      end
+                end
+                
+            % if count, add that structure
+            else
+                cat.plot.(s_cond).(s_diff).count = ...
+                    [ length( cat.(s_cond).(s_diff).co.q1 ) ...
+                      length( cat.(s_cond).(s_diff).co.q2 ) ...
+                      length( cat.(s_cond).(s_diff).co.q3 ) ...
+                      length( cat.(s_cond).(s_diff).co.q4 ) ...
+                      length( cat.(s_cond).(s_diff).co.q5 ) ];
+            end
+        end
+    end
+end
+            
 % plot the thing
 f = figure('Position',[0 0 1000 600]);
 hold on;
-plot( cat.plot.c.hard.x.value, cat.plot.c.hard.y.value, '--b' );
-plot( cat.plot.c.easy.x.value, cat.plot.c.easy.y.value, '-b' );
-plot( cat.plot.i.hard.x.value, cat.plot.i.hard.y.value, '--r' );
-plot( cat.plot.i.easy.x.value, cat.plot.i.easy.y.value, '-r' );
-plot( cat.plot.n.hard.x.value, cat.plot.n.hard.y.value, '--g' );
-plot( cat.plot.n.easy.x.value, cat.plot.n.easy.y.value, '-g' );
+% plot( cat.plot.c.hard.x.value, cat.plot.c.hard.y.value, '--b' );
+% plot( cat.plot.c.easy.x.value, cat.plot.c.easy.y.value, '-b' );
+% plot( cat.plot.i.hard.x.value, cat.plot.i.hard.y.value, '--r' );
+% plot( cat.plot.i.easy.x.value, cat.plot.i.easy.y.value, '-r' );
+% plot( cat.plot.n.hard.x.value, cat.plot.n.hard.y.value, '--g' );
+% plot( cat.plot.n.easy.x.value, cat.plot.n.easy.y.value, '-g' );
+errorbar( cat.plot.c.hard.rt.mean, cat.plot.c.hard.co.mean, cat.plot.c.hard.rt.std, '--b' );
+errorbar( cat.plot.c.easy.rt.mean, cat.plot.c.easy.co.mean, cat.plot.c.easy.rt.std, '-b' );
+errorbar( cat.plot.i.hard.rt.mean, cat.plot.i.hard.co.mean, cat.plot.i.hard.rt.std, '--r' );
+errorbar( cat.plot.i.easy.rt.mean, cat.plot.i.easy.co.mean, cat.plot.i.easy.rt.std, '-r' );
+errorbar( cat.plot.n.hard.rt.mean, cat.plot.n.hard.co.mean, cat.plot.n.hard.rt.std, '--g' );
+errorbar( cat.plot.n.easy.rt.mean, cat.plot.n.easy.co.mean, cat.plot.n.easy.rt.std, '-g' );
 
-scatter( cat.plot.c.hard.x.value, cat.plot.c.hard.y.value, cat.plot.c.hard.count*4, 'ob', 'filled' );
-scatter( cat.plot.c.easy.x.value, cat.plot.c.easy.y.value, cat.plot.c.easy.count*4, '^b', 'filled' );
-scatter( cat.plot.i.hard.x.value, cat.plot.i.hard.y.value, cat.plot.i.hard.count*4, 'or', 'filled' );
-scatter( cat.plot.i.easy.x.value, cat.plot.i.easy.y.value, cat.plot.i.easy.count*4, '^r', 'filled' );
-scatter( cat.plot.n.hard.x.value, cat.plot.n.hard.y.value, cat.plot.n.hard.count*4, 'og', 'filled' );
-scatter( cat.plot.n.easy.x.value, cat.plot.n.easy.y.value, cat.plot.n.easy.count*4, '^g', 'filled' );
+scatter( cat.plot.c.hard.rt.mean, cat.plot.c.hard.co.mean, cat.plot.c.hard.count*4, 'ob', 'filled' );
+scatter( cat.plot.c.easy.rt.mean, cat.plot.c.easy.co.mean, cat.plot.c.easy.count*4, '^b', 'filled' );
+scatter( cat.plot.i.hard.rt.mean, cat.plot.i.hard.co.mean, cat.plot.i.hard.count*4, 'or', 'filled' );
+scatter( cat.plot.i.easy.rt.mean, cat.plot.i.easy.co.mean, cat.plot.i.easy.count*4, '^r', 'filled' );
+scatter( cat.plot.n.hard.rt.mean, cat.plot.n.hard.co.mean, cat.plot.n.hard.count*4, 'og', 'filled' );
+scatter( cat.plot.n.easy.rt.mean, cat.plot.n.easy.co.mean, cat.plot.n.easy.count*4, '^g', 'filled' );
 
 % plot extra lines to show quantile demarcations
 quant_marker(5) = trialdata.responseInterval;  % add marker for deadline
